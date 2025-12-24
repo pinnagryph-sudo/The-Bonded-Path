@@ -21,6 +21,7 @@
     
     <style>
         :root {
+            /* Light mode (default) */
             --parchment: #f8f4e8;
             --parchment-dark: #e8e0cc;
             --ink: #2c2416;
@@ -33,6 +34,11 @@
             --highlight: #fff3c4;
             --danger: #8b2500;
             --teal: #2f6b6b;
+            --card-bg: #ffffff;
+            --table-header: #1e3a5f;
+            --table-alt: rgba(0,0,0,0.02);
+            --shadow-color: rgba(0,0,0,0.1);
+            --page-shadow: rgba(0,0,0,0.15);
             
             /* Mobile-friendly touch targets */
             --touch-target: 44px;
@@ -40,6 +46,76 @@
             --safe-bottom: env(safe-area-inset-bottom, 0px);
             --safe-left: env(safe-area-inset-left, 0px);
             --safe-right: env(safe-area-inset-right, 0px);
+        }
+        
+        /* Dark mode */
+        [data-theme="dark"] {
+            --parchment: #1a1a1f;
+            --parchment-dark: #252529;
+            --ink: #e8e4dc;
+            --ink-light: #c4bfb4;
+            --ink-faded: #9a9488;
+            --accent: #d4a574;
+            --accent-gold: #e4c87a;
+            --chapter-blue: #7eb8da;
+            --sidebar-bg: #12121a;
+            --highlight: #3d3a2e;
+            --danger: #e07060;
+            --teal: #5ab8b8;
+            --card-bg: #222228;
+            --table-header: #2a3a4a;
+            --table-alt: rgba(255,255,255,0.03);
+            --shadow-color: rgba(0,0,0,0.3);
+            --page-shadow: rgba(0,0,0,0.4);
+        }
+        
+        [data-theme="dark"] body {
+            background: #0d0d12;
+        }
+        
+        [data-theme="dark"] .sidebar {
+            background: linear-gradient(135deg, #252530 0%, #1e1e28 100%);
+            border-color: #3a3a44;
+        }
+        [data-theme="dark"] .sidebar.warning {
+            background: linear-gradient(135deg, #2a2520 0%, #252018 100%);
+        }
+        [data-theme="dark"] .sidebar.danger {
+            background: linear-gradient(135deg, #2a1f1f 0%, #251a1a 100%);
+        }
+        [data-theme="dark"] .sidebar.quote {
+            background: linear-gradient(135deg, #2a2820 0%, #252318 100%);
+        }
+        
+        [data-theme="dark"] .data-table {
+            background: var(--card-bg);
+        }
+        [data-theme="dark"] .data-table th {
+            background: var(--table-header);
+        }
+        [data-theme="dark"] .data-table td {
+            border-color: #3a3a44;
+        }
+        
+        [data-theme="dark"] .stat-card,
+        [data-theme="dark"] .breed-card,
+        [data-theme="dark"] .realm-card {
+            background: var(--card-bg);
+            border-color: #3a3a44;
+        }
+        
+        [data-theme="dark"] .chapter-nav-btn {
+            background: var(--card-bg);
+            border-color: #3a3a44;
+            color: var(--ink);
+        }
+        
+        [data-theme="dark"] .realm-body {
+            background: var(--card-bg);
+        }
+        
+        [data-theme="dark"] .breed-info {
+            background: var(--card-bg);
         }
         
         * { 
@@ -696,6 +772,32 @@
         }
         .overlay.active { display: block; }
         
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            top: 0.8rem;
+            top: calc(0.8rem + var(--safe-top));
+            right: 0.8rem;
+            right: calc(0.8rem + var(--safe-right));
+            z-index: 200;
+            background: var(--sidebar-bg);
+            border: 1px solid var(--accent-gold);
+            border-radius: 8px;
+            width: var(--touch-target);
+            height: var(--touch-target);
+            color: var(--accent-gold);
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        .theme-toggle:hover {
+            background: var(--accent-gold);
+            color: var(--sidebar-bg);
+        }
+        
         /* MOBILE RESPONSIVE */
         @media (max-width: 768px) {
             html { font-size: 16px; }
@@ -785,6 +887,7 @@
     
     <div class="overlay" id="overlay"></div>
     <button class="mobile-menu-btn" id="mobileMenuBtn">☰</button>
+    <button class="theme-toggle" id="themeToggle" title="Toggle dark mode">☀️</button>
     
     <div class="book-container">
         <aside class="toc-sidebar" id="tocSidebar">
@@ -1423,6 +1526,52 @@ if ('serviceWorker' in navigator) {
         });
     });
 }
+
+// ============================================
+// THEME TOGGLE
+// ============================================
+
+function initTheme() {
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    if (savedTheme) {
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        updateThemeIcon(savedTheme);
+    } else if (prefersDark) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        updateThemeIcon('dark');
+    }
+}
+
+function toggleTheme() {
+    const current = document.documentElement.getAttribute('data-theme');
+    const newTheme = current === 'dark' ? 'light' : 'dark';
+    
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    updateThemeIcon(newTheme);
+}
+
+function updateThemeIcon(theme) {
+    const btn = document.getElementById('themeToggle');
+    btn.textContent = theme === 'dark' ? '🌙' : '☀️';
+    btn.title = theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
+}
+
+document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+
+// Listen for system theme changes
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
+    if (!localStorage.getItem('theme')) {
+        const newTheme = e.matches ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        updateThemeIcon(newTheme);
+    }
+});
+
+// Initialize theme on load
+initTheme();
 
 // ============================================
 // BOOK NAVIGATION

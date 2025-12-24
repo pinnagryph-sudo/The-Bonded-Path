@@ -1,5 +1,5 @@
 // The Bonded Path - Service Worker
-const CACHE_NAME = 'bonded-path-v1';
+const CACHE_NAME = 'bonded-path-v2';
 const CACHE_URLS = [
   './',
   './index.html',
