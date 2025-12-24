@@ -1,0 +1,1734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Bonded Path">
+    <meta name="theme-color" content="#2d2518">
+    <meta name="description" content="The complete guide to Pinnagryphs and the Six Realms of Vaeloris">
+    
+    <title>The Bonded Path</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="./manifest.json">
+    
+    <!-- Fallback icon for iOS -->
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%232d2518'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-size='80' fill='%23b8860b'%3E🐯%3C/text%3E%3C/svg%3E">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Crimson+Pro:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --parchment: #f8f4e8;
+            --parchment-dark: #e8e0cc;
+            --ink: #2c2416;
+            --ink-light: #4a3f2f;
+            --ink-faded: #6b5d4a;
+            --accent: #8b4513;
+            --accent-gold: #b8860b;
+            --chapter-blue: #1e3a5f;
+            --sidebar-bg: #2d2518;
+            --highlight: #fff3c4;
+            --danger: #8b2500;
+            --teal: #2f6b6b;
+            
+            /* Mobile-friendly touch targets */
+            --touch-target: 44px;
+            --safe-top: env(safe-area-inset-top, 0px);
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+            --safe-left: env(safe-area-inset-left, 0px);
+            --safe-right: env(safe-area-inset-right, 0px);
+        }
+        
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        html { 
+            font-size: 18px;
+            /* Prevent text size adjustment on orientation change */
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+        }
+        
+        body { 
+            font-family: 'Crimson Pro', Georgia, serif; 
+            background: #1a1510; 
+            color: var(--ink); 
+            min-height: 100vh;
+            min-height: 100dvh; /* Dynamic viewport height for mobile */
+            line-height: 1.75;
+            overflow: hidden;
+            /* Prevent pull-to-refresh */
+            overscroll-behavior-y: contain;
+        }
+        
+        /* Update Banner */
+        .update-banner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, var(--teal), #1e5a5a);
+            color: white;
+            padding: 0.8rem 1rem;
+            padding-top: calc(0.8rem + var(--safe-top));
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            z-index: 9999;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        .update-banner.visible { display: flex; }
+        .update-banner button {
+            background: white;
+            color: var(--teal);
+            border: none;
+            padding: 0.4rem 1rem;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            min-height: var(--touch-target);
+        }
+        
+        /* Install Prompt */
+        .install-prompt {
+            position: fixed;
+            bottom: 1rem;
+            bottom: calc(1rem + var(--safe-bottom));
+            left: 1rem;
+            right: 1rem;
+            background: var(--sidebar-bg);
+            border: 1px solid var(--accent-gold);
+            border-radius: 12px;
+            padding: 1rem;
+            display: none;
+            flex-direction: column;
+            gap: 0.8rem;
+            z-index: 9998;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+        }
+        .install-prompt.visible { display: flex; }
+        .install-prompt-text {
+            color: var(--parchment);
+            font-size: 0.95rem;
+        }
+        .install-prompt-title {
+            font-family: 'Cinzel', serif;
+            color: var(--accent-gold);
+            font-size: 1rem;
+            margin-bottom: 0.3rem;
+        }
+        .install-prompt-buttons {
+            display: flex;
+            gap: 0.8rem;
+        }
+        .install-prompt-buttons button {
+            flex: 1;
+            padding: 0.7rem;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            cursor: pointer;
+            min-height: var(--touch-target);
+        }
+        .install-btn {
+            background: var(--accent-gold);
+            color: var(--ink);
+            border: none;
+            font-weight: 600;
+        }
+        .dismiss-btn {
+            background: transparent;
+            color: var(--parchment);
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        
+        .book-container { 
+            display: flex; 
+            height: 100vh;
+            height: 100dvh;
+        }
+        
+        /* Table of Contents Sidebar */
+        .toc-sidebar {
+            width: 300px;
+            min-width: 300px;
+            background: var(--sidebar-bg);
+            border-right: 3px solid var(--accent);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 100;
+            transition: transform 0.3s ease;
+            padding-top: var(--safe-top);
+        }
+        
+        .toc-header {
+            padding: 1.2rem 1rem;
+            background: linear-gradient(180deg, #3d3425 0%, var(--sidebar-bg) 100%);
+            border-bottom: 1px solid rgba(184,134,11,0.3);
+        }
+        .toc-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1rem;
+            color: var(--accent-gold);
+            letter-spacing: 0.1em;
+            margin-bottom: 0.2rem;
+        }
+        .toc-subtitle {
+            font-size: 0.7rem;
+            color: #a99;
+            font-style: italic;
+        }
+        
+        .toc-search {
+            padding: 0.7rem 1rem;
+            border-bottom: 1px solid rgba(184,134,11,0.2);
+            position: relative;
+        }
+        .toc-search input {
+            width: 100%;
+            padding: 0.6rem 0.8rem;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(184,134,11,0.3);
+            border-radius: 6px;
+            color: var(--parchment);
+            font-family: inherit;
+            font-size: 1rem; /* Prevent iOS zoom */
+            min-height: var(--touch-target);
+        }
+        .toc-search input::placeholder { color: #888; }
+        .toc-search input:focus { outline: none; border-color: var(--accent-gold); }
+        
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0.5rem;
+            right: 0.5rem;
+            background: #3d3425;
+            border: 1px solid var(--accent-gold);
+            border-radius: 0 0 6px 6px;
+            max-height: 250px;
+            overflow-y: auto;
+            display: none;
+            z-index: 10;
+        }
+        .search-results.active { display: block; }
+        .search-result {
+            padding: 0.7rem 0.8rem;
+            cursor: pointer;
+            border-bottom: 1px solid rgba(184,134,11,0.1);
+            min-height: var(--touch-target);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .search-result:hover, .search-result:active { background: rgba(184,134,11,0.15); }
+        .search-result-title { font-size: 0.9rem; color: var(--parchment); }
+        .search-result-context { font-size: 0.75rem; color: #999; }
+        
+        .toc-content {
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 0.5rem 0;
+        }
+        .toc-content::-webkit-scrollbar { width: 5px; }
+        .toc-content::-webkit-scrollbar-thumb { background: rgba(184,134,11,0.4); border-radius: 3px; }
+        
+        .toc-book { border-bottom: 1px solid rgba(184,134,11,0.15); }
+        .toc-book-header {
+            display: flex;
+            align-items: center;
+            padding: 0.8rem 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+            min-height: var(--touch-target);
+        }
+        .toc-book-header:hover, .toc-book-header:active { background: rgba(184,134,11,0.1); }
+        .toc-book-header.active { background: rgba(184,134,11,0.15); border-left-color: var(--accent-gold); }
+        .toc-book-num {
+            font-family: 'Cinzel', serif;
+            font-size: 0.6rem;
+            color: var(--accent-gold);
+            width: 40px;
+            flex-shrink: 0;
+        }
+        .toc-book-title {
+            font-family: 'Cinzel', serif;
+            font-size: 0.8rem;
+            color: var(--parchment);
+            flex: 1;
+        }
+        .toc-expand {
+            color: #888;
+            font-size: 0.6rem;
+            transition: transform 0.2s;
+            padding: 0.5rem;
+        }
+        .toc-book-header.expanded .toc-expand { transform: rotate(180deg); }
+        
+        .toc-chapters {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            background: rgba(0,0,0,0.2);
+        }
+        .toc-chapters.expanded { max-height: 500px; }
+        .toc-chapter {
+            padding: 0.7rem 1rem 0.7rem 3rem;
+            font-size: 0.8rem;
+            color: #bba;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 2px solid transparent;
+            min-height: var(--touch-target);
+            display: flex;
+            align-items: center;
+        }
+        .toc-chapter:hover, .toc-chapter:active { color: var(--parchment); background: rgba(184,134,11,0.08); }
+        .toc-chapter.active { color: var(--accent-gold); border-left-color: var(--accent-gold); background: rgba(184,134,11,0.1); }
+        
+        .reading-progress {
+            padding: 0.8rem 1rem;
+            padding-bottom: calc(0.8rem + var(--safe-bottom));
+            border-top: 1px solid rgba(184,134,11,0.2);
+            background: rgba(0,0,0,0.2);
+        }
+        .progress-bar {
+            height: 4px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-bottom: 0.4rem;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-gold), var(--accent));
+            width: 0%;
+            transition: width 0.3s;
+        }
+        .progress-text {
+            font-size: 0.65rem;
+            color: #888;
+            text-align: center;
+        }
+        
+        /* Main Book Area */
+        .book-main {
+            flex: 1;
+            margin-left: 300px;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        
+        .book-page {
+            flex: 1;
+            background: var(--parchment);
+            box-shadow: inset 5px 0 20px rgba(0,0,0,0.15);
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .page-content {
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 2.5rem 2rem 4rem;
+            padding-bottom: calc(4rem + var(--safe-bottom));
+        }
+        
+        /* Chapter Header */
+        .chapter-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--ink-faded);
+        }
+        .chapter-book-ref {
+            font-family: 'Cinzel', serif;
+            font-size: 0.6rem;
+            color: var(--accent);
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            margin-bottom: 0.6rem;
+        }
+        .chapter-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.7rem;
+            font-weight: 600;
+            color: var(--chapter-blue);
+            margin-bottom: 0.4rem;
+            line-height: 1.3;
+            /* Better word wrapping */
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            hyphens: auto;
+        }
+        .chapter-subtitle {
+            font-size: 0.95rem;
+            font-style: italic;
+            color: var(--ink-faded);
+        }
+        
+        /* Prose Typography - Mobile Optimized */
+        .prose { 
+            font-size: 1rem; 
+            line-height: 1.8; 
+            /* Better word wrapping for mobile */
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            hyphens: auto;
+            -webkit-hyphens: auto;
+        }
+        .prose p { 
+            margin-bottom: 1.1rem; 
+            text-indent: 1.2rem; 
+        }
+        .prose p:first-of-type { text-indent: 0; }
+        .prose p:first-of-type::first-letter {
+            font-family: 'Cinzel', serif;
+            font-size: 2.8rem;
+            float: left;
+            line-height: 1;
+            padding-right: 0.3rem;
+            padding-top: 0.1rem;
+            color: var(--accent);
+        }
+        .prose h2 + p, .prose h3 + p, .prose .sidebar + p, .prose ul + p, .prose ol + p, .prose table + p { text-indent: 0; }
+        .prose h2 + p::first-letter, .prose h3 + p::first-letter, .prose .sidebar + p::first-letter { float: none; font-size: inherit; padding: 0; }
+        
+        .prose h2 {
+            font-family: 'Cinzel', serif;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--chapter-blue);
+            margin: 2rem 0 0.8rem;
+            padding-top: 1.2rem;
+            border-top: 1px solid var(--parchment-dark);
+            word-wrap: break-word;
+        }
+        .prose h2:first-child { border-top: none; padding-top: 0; margin-top: 0; }
+        .prose h3 {
+            font-family: 'Cinzel', serif;
+            font-size: 1.05rem;
+            font-weight: 500;
+            color: var(--accent);
+            margin: 1.5rem 0 0.6rem;
+        }
+        .prose h4 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--ink);
+            margin: 1rem 0 0.4rem;
+            font-style: italic;
+        }
+        .prose strong { font-weight: 600; color: var(--ink); }
+        .prose em { font-style: italic; }
+        .prose ul, .prose ol { 
+            margin: 0.8rem 0 1.2rem 1.2rem; 
+            text-indent: 0;
+        }
+        .prose li { 
+            margin-bottom: 0.35rem; 
+            text-indent: 0;
+            padding-left: 0.3rem;
+        }
+        .prose li::marker { color: var(--accent); }
+        
+        /* Sidebar Boxes - Mobile Optimized */
+        .sidebar {
+            background: linear-gradient(135deg, var(--parchment-dark) 0%, #ddd5c0 100%);
+            border: 1px solid #c4b89a;
+            border-left: 4px solid var(--teal);
+            padding: 1rem;
+            margin: 1.2rem 0;
+            border-radius: 0 6px 6px 0;
+        }
+        .sidebar.warning { border-left-color: var(--accent); background: linear-gradient(135deg, #f5ebe0, #e8dcc8); }
+        .sidebar.danger { border-left-color: var(--danger); background: linear-gradient(135deg, #f8ebe8, #f0ddd8); }
+        .sidebar.quote { border-left-color: var(--accent-gold); background: linear-gradient(135deg, #f8f4e0, #f0e8c8); }
+        .sidebar-header { 
+            display: flex; 
+            align-items: flex-start; 
+            gap: 0.4rem; 
+            margin-bottom: 0.4rem; 
+            flex-wrap: wrap; 
+        }
+        .sidebar-tag {
+            font-family: 'Cinzel', serif;
+            font-size: 0.5rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0.1rem 0.4rem;
+            border-radius: 3px;
+            background: var(--teal);
+            color: white;
+            flex-shrink: 0;
+        }
+        .sidebar.warning .sidebar-tag { background: var(--accent); }
+        .sidebar.danger .sidebar-tag { background: var(--danger); }
+        .sidebar.quote .sidebar-tag { background: var(--accent-gold); }
+        .sidebar-title { 
+            font-family: 'Cinzel', serif; 
+            font-size: 0.85rem; 
+            font-weight: 600; 
+            color: var(--ink);
+            flex: 1;
+            min-width: 0;
+            word-wrap: break-word;
+        }
+        .sidebar-text { 
+            font-size: 0.9rem; 
+            color: var(--ink-light); 
+            font-style: italic; 
+            line-height: 1.6; 
+            text-indent: 0 !important;
+            word-wrap: break-word;
+        }
+        .sidebar-source { 
+            font-size: 0.7rem; 
+            color: var(--ink-faded); 
+            margin-top: 0.4rem; 
+            text-align: right; 
+        }
+        
+        /* Tables - Mobile Optimized */
+        .data-table-wrapper { 
+            margin: 1.2rem 0; 
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            border-radius: 6px;
+        }
+        .data-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            font-size: 0.8rem; 
+            background: white; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            min-width: 280px;
+        }
+        .data-table th {
+            font-family: 'Cinzel', serif;
+            font-size: 0.65rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            background: var(--chapter-blue);
+            color: white;
+            padding: 0.5rem 0.6rem;
+            text-align: left;
+            white-space: nowrap;
+        }
+        .data-table td { 
+            padding: 0.5rem 0.6rem; 
+            border-bottom: 1px solid var(--parchment-dark); 
+            vertical-align: top;
+        }
+        .data-table tr:nth-child(even) td { background: rgba(0,0,0,0.02); }
+        .data-table tr.highlight td { background: var(--highlight); font-weight: 500; }
+        
+        /* Stats Cards - Mobile Grid */
+        .stats-row { 
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.6rem; 
+            margin: 1.2rem 0;
+        }
+        .stat-card {
+            background: white;
+            border: 1px solid var(--parchment-dark);
+            border-radius: 6px;
+            padding: 0.8rem;
+            text-align: center;
+        }
+        .stat-value { font-family: 'Cinzel', serif; font-size: 1.2rem; font-weight: 600; color: var(--chapter-blue); }
+        .stat-label { font-size: 0.6rem; color: var(--ink-faded); text-transform: uppercase; letter-spacing: 0.03em; }
+        
+        /* Breed Cards - Mobile Grid */
+        .breed-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); 
+            gap: 0.6rem; 
+            margin: 1.2rem 0; 
+        }
+        .breed-card {
+            background: white;
+            border: 1px solid var(--parchment-dark);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .breed-pattern { height: 40px; }
+        .breed-pattern.rosettes { background: radial-gradient(circle at 25% 40%, rgba(139,69,19,0.6) 0%, transparent 22%), radial-gradient(circle at 65% 35%, rgba(139,69,19,0.6) 0%, transparent 18%), linear-gradient(135deg, #c9a227, #a08020); }
+        .breed-pattern.stripes { background: repeating-linear-gradient(80deg, #c76a20 0px, #c76a20 5px, #3d2010 5px, #3d2010 10px); }
+        .breed-pattern.solid-gold { background: linear-gradient(135deg, #c9a227, #a08020); }
+        .breed-pattern.solid-tan { background: linear-gradient(135deg, #b8956b, #8b7355); }
+        .breed-pattern.melanistic { background: linear-gradient(135deg, #2a2a2a, #1a1a1a); }
+        .breed-pattern.leucistic { background: linear-gradient(135deg, #f5f5f5, #e0e0e0); }
+        .breed-info { padding: 0.5rem; }
+        .breed-name { font-family: 'Cinzel', serif; font-size: 0.75rem; font-weight: 600; color: var(--ink); }
+        .breed-desc { font-size: 0.65rem; color: var(--ink-faded); }
+        
+        /* Realm Cards - Mobile Stack */
+        .realm-grid { 
+            display: grid; 
+            grid-template-columns: 1fr; 
+            gap: 0.8rem; 
+            margin: 1.2rem 0; 
+        }
+        .realm-card {
+            background: white;
+            border: 1px solid var(--parchment-dark);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .realm-banner { height: 50px; display: flex; align-items: flex-end; padding: 0.5rem; }
+        .realm-banner.skyspine { background: linear-gradient(135deg, #5a7fb5, #3a4f75); }
+        .realm-banner.emerald { background: linear-gradient(135deg, #3a8a5e, #2a5a3e); }
+        .realm-banner.lanternwater { background: linear-gradient(135deg, #5a7a9a, #3a5a7a); }
+        .realm-banner.glasscoast { background: linear-gradient(135deg, #5ab8b8, #3a9898); }
+        .realm-banner.saffron { background: linear-gradient(135deg, #d4a030, #b08020); }
+        .realm-banner.obsidian { background: linear-gradient(135deg, #4a4a5a, #2a2a3a); }
+        .realm-banner-title { font-family: 'Cinzel', serif; font-size: 0.95rem; color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.3); }
+        .realm-body { padding: 0.7rem; }
+        .realm-culture { font-size: 0.8rem; color: var(--accent); margin-bottom: 0.3rem; font-style: italic; }
+        .realm-desc { font-size: 0.85rem; color: var(--ink-light); line-height: 1.5; }
+        .realm-stats { display: flex; gap: 0.8rem; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid var(--parchment-dark); flex-wrap: wrap; }
+        .realm-stat { font-size: 0.7rem; color: var(--ink-faded); }
+        .realm-stat strong { color: var(--ink); }
+        
+        /* Chapter Navigation */
+        .chapter-nav {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--parchment-dark);
+            gap: 0.8rem;
+        }
+        .chapter-nav-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.3rem;
+            padding: 0.7rem 1rem;
+            background: white;
+            border: 1px solid var(--parchment-dark);
+            border-radius: 6px;
+            color: var(--ink);
+            font-family: inherit;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-height: var(--touch-target);
+            flex: 1;
+            max-width: 150px;
+        }
+        .chapter-nav-btn:active { background: var(--chapter-blue); color: white; border-color: var(--chapter-blue); }
+        .chapter-nav-btn.disabled { opacity: 0.4; pointer-events: none; }
+        
+        /* Mobile Menu Button */
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 0.8rem;
+            top: calc(0.8rem + var(--safe-top));
+            left: 0.8rem;
+            left: calc(0.8rem + var(--safe-left));
+            z-index: 200;
+            background: var(--sidebar-bg);
+            border: 1px solid var(--accent-gold);
+            border-radius: 8px;
+            width: var(--touch-target);
+            height: var(--touch-target);
+            color: var(--parchment);
+            font-size: 1.3rem;
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .back-to-top {
+            position: fixed;
+            bottom: 1.5rem;
+            bottom: calc(1.5rem + var(--safe-bottom));
+            right: 1rem;
+            right: calc(1rem + var(--safe-right));
+            width: var(--touch-target);
+            height: var(--touch-target);
+            background: var(--chapter-blue);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .back-to-top.visible { opacity: 1; visibility: visible; }
+        .back-to-top:active { background: var(--accent); transform: scale(0.95); }
+        
+        .overlay { 
+            display: none; 
+            position: fixed; 
+            inset: 0; 
+            background: rgba(0,0,0,0.6); 
+            z-index: 99;
+            backdrop-filter: blur(2px);
+        }
+        .overlay.active { display: block; }
+        
+        /* MOBILE RESPONSIVE */
+        @media (max-width: 768px) {
+            html { font-size: 16px; }
+            
+            .toc-sidebar { 
+                transform: translateX(-100%);
+                width: 85%;
+                max-width: 320px;
+            }
+            .toc-sidebar.open { transform: translateX(0); }
+            
+            .book-main { margin-left: 0; }
+            .mobile-menu-btn { display: flex; }
+            
+            .page-content { 
+                padding: 4.5rem 1.2rem 3rem;
+                padding-top: calc(4.5rem + var(--safe-top));
+            }
+            
+            .chapter-title { font-size: 1.4rem; }
+            .chapter-book-ref { font-size: 0.55rem; }
+            
+            .prose { font-size: 1rem; line-height: 1.75; }
+            .prose p { text-indent: 1rem; margin-bottom: 1rem; }
+            .prose p:first-of-type::first-letter { font-size: 2.4rem; }
+            .prose h2 { font-size: 1.15rem; }
+            .prose h3 { font-size: 1rem; }
+            
+            .sidebar { padding: 0.9rem; margin: 1rem 0; }
+            .sidebar-title { font-size: 0.8rem; }
+            .sidebar-text { font-size: 0.85rem; }
+            
+            .stats-row { grid-template-columns: repeat(2, 1fr); }
+            .stat-value { font-size: 1.1rem; }
+            
+            .breed-grid { grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+            .breed-name { font-size: 0.7rem; }
+            .breed-desc { font-size: 0.6rem; }
+            
+            .realm-grid { grid-template-columns: 1fr; }
+            
+            .chapter-nav { gap: 0.5rem; }
+            .chapter-nav-btn { padding: 0.6rem 0.8rem; font-size: 0.8rem; }
+        }
+        
+        @media (max-width: 400px) {
+            .page-content { padding: 4rem 1rem 2.5rem; }
+            .stats-row { grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
+            .stat-card { padding: 0.6rem; }
+            .stat-value { font-size: 1rem; }
+            .breed-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        
+        /* Landscape phone */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .page-content { padding-top: 3.5rem; padding-bottom: 2rem; }
+            .chapter-header { margin-bottom: 1.5rem; padding-bottom: 1rem; }
+        }
+        
+        /* Print */
+        @media print {
+            .toc-sidebar, .mobile-menu-btn, .back-to-top, .chapter-nav, .overlay, .update-banner, .install-prompt { display: none !important; }
+            .book-main { margin-left: 0; }
+            .book-page { box-shadow: none; overflow: visible; }
+            .page-content { max-width: 100%; padding: 0; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Update Available Banner -->
+    <div class="update-banner" id="updateBanner">
+        <span>📚 A new version is available!</span>
+        <button onclick="location.reload()">Update Now</button>
+    </div>
+    
+    <!-- Install Prompt -->
+    <div class="install-prompt" id="installPrompt">
+        <div>
+            <div class="install-prompt-title">📖 Install The Bonded Path</div>
+            <div class="install-prompt-text">Add this guide to your home screen for quick access and offline reading.</div>
+        </div>
+        <div class="install-prompt-buttons">
+            <button class="dismiss-btn" onclick="dismissInstall()">Not Now</button>
+            <button class="install-btn" onclick="installApp()">Install</button>
+        </div>
+    </div>
+    
+    <div class="overlay" id="overlay"></div>
+    <button class="mobile-menu-btn" id="mobileMenuBtn">☰</button>
+    
+    <div class="book-container">
+        <aside class="toc-sidebar" id="tocSidebar">
+            <div class="toc-header">
+                <div class="toc-title">THE BONDED PATH</div>
+                <div class="toc-subtitle">Complete Guide to Pinnagryphs</div>
+            </div>
+            <div class="toc-search">
+                <input type="text" id="searchInput" placeholder="Search..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+                <div class="search-results" id="searchResults"></div>
+            </div>
+            <div class="toc-content" id="tocContent"></div>
+            <div class="reading-progress">
+                <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+                <div class="progress-text" id="progressText">0%</div>
+            </div>
+        </aside>
+        
+        <main class="book-main">
+            <div class="book-page" id="bookPage">
+                <div class="page-content" id="pageContent"></div>
+            </div>
+        </main>
+    </div>
+    
+    <button class="back-to-top" id="backToTop">↑</button>
+
+<script>
+// ============================================
+// BOOK DATA
+// ============================================
+const bookData = {
+    frontMatter: {
+        title: "Front Matter",
+        chapters: {
+            "title-page": {
+                title: "Title Page",
+                content: `<div style="text-align:center;padding:2rem 0;">
+                    <div style="font-size:0.7rem;color:var(--accent);letter-spacing:0.25em;margin-bottom:1.5rem;">A COLLECTED SOURCES GUIDEBOOK</div>
+                    <h1 style="font-family:'Cinzel',serif;font-size:2.2rem;color:var(--chapter-blue);margin-bottom:0.4rem;line-height:1.2;">THE BONDED PATH</h1>
+                    <div style="font-size:1.1rem;color:var(--ink-faded);margin-bottom:1.5rem;font-style:italic;">A Complete Guide to Pinnagryphs<br>&amp; the Six Realms of Vaeloris</div>
+                    <div style="width:50px;height:2px;background:var(--accent-gold);margin:1.5rem auto;"></div>
+                    <div style="font-size:0.8rem;color:var(--ink-faded);">Extended Edition</div>
+                </div>
+                <div class="sidebar quote">
+                    <div class="sidebar-header"><span class="sidebar-tag">Universal</span><span class="sidebar-title">The First Principle</span></div>
+                    <div class="sidebar-text">"The bond chooses the pair. The work keeps them alive."</div>
+                </div>
+                <p style="text-align:center;margin-top:1.5rem;color:var(--ink-faded);font-style:italic;font-size:0.9rem;">Natural history, breed atlas, bond phenomena, and the traditions that grew up around a cliff-swimming sabercat with a feathered ruff.</p>`
+            },
+            "quick-reference": {
+                title: "Quick Reference",
+                content: `<h2>The Pinnagryph at a Glance</h2>
+                <div class="stats-row">
+                    <div class="stat-card"><div class="stat-value">6.5-7 ft</div><div class="stat-label">Male Height</div></div>
+                    <div class="stat-card"><div class="stat-value">350-450</div><div class="stat-label">Weight (lbs)</div></div>
+                    <div class="stat-card"><div class="stat-value">35-50</div><div class="stat-label">Lifespan</div></div>
+                    <div class="stat-card"><div class="stat-value">~400k</div><div class="stat-label">Population</div></div>
+                </div>
+                <h3>Physical Traits</h3>
+                <ul>
+                    <li><strong>Body:</strong> Large amphibious predator; feline-pinniped hybrid</li>
+                    <li><strong>Coat:</strong> Dense waterproof fur (~26,000 hairs/cm²)</li>
+                    <li><strong>Plumage:</strong> Feathered ruff and tail-fan</li>
+                    <li><strong>Paws:</strong> Webbed with retractable claws</li>
+                    <li><strong>Teeth:</strong> Saber-like canines (1.2-2 inches)</li>
+                </ul>
+                <h3>Temperament Classes</h3>
+                <div class="data-table-wrapper"><table class="data-table">
+                    <thead><tr><th>Class</th><th>%</th><th>Traits</th></tr></thead>
+                    <tbody>
+                        <tr><td><strong>Alpha</strong></td><td>20%</td><td>Assertive, largest</td></tr>
+                        <tr><td><strong>Beta</strong></td><td>55%</td><td>Adaptable, balanced</td></tr>
+                        <tr><td><strong>Omega</strong></td><td>25%</td><td>Gentle, sensitive</td></tr>
+                    </tbody>
+                </table></div>
+                <h3>The Soul Tie</h3>
+                <ul>
+                    <li><strong>Forms:</strong> During bonding window (10-14 days after birth)</li>
+                    <li><strong>Initiator:</strong> Cub chooses human (never reverse)</li>
+                    <li><strong>Duration:</strong> Lifelong, exclusive, unbreakable</li>
+                    <li><strong>Provides:</strong> Emotional sharing, proximity awareness</li>
+                </ul>
+                <div class="sidebar quote">
+                    <div class="sidebar-header"><span class="sidebar-tag">Truth</span><span class="sidebar-title">The Bond Is Real</span></div>
+                    <div class="sidebar-text">The Soul Tie is not metaphor or superstition. It is a documented biological and spiritual phenomenon across all six realms.</div>
+                </div>`
+            }
+        }
+    },
+    book1: {
+        title: "Book One: The Pinnagryph Companion",
+        subtitle: "Natural History & Species Reference",
+        chapters: {
+            "calendar": {
+                title: "The Vaeloris Calendar",
+                content: `<p>Understanding how Vaeloris marks time is essential, because the calendar itself is built around Pinnagryph reproductive cycles. The year's structure reflects the rhythm of bonding ceremonies, breeding seasons, and cub births.</p>
+                <div class="sidebar quote">
+                    <div class="sidebar-header"><span class="sidebar-tag">Linguistic</span><span class="sidebar-title">Days and Months</span></div>
+                    <div class="sidebar-text">"Days are heartbeats. Months are breaths. We work through the days; we witness the months."</div>
+                </div>
+                <h2>The Twelve Months</h2>
+                <p>The year consists of <strong>360 days</strong> divided into twelve months of thirty days each. The suffix <strong>'-ath'</strong> marks sacred time; <strong>'-is'</strong> marks practical time.</p>
+                <div class="data-table-wrapper"><table class="data-table">
+                    <thead><tr><th>#</th><th>Name</th><th>Season</th><th>Significance</th></tr></thead>
+                    <tbody>
+                        <tr><td>1</td><td>Stilath</td><td>Deep Winter</td><td>Pregnancy month 2</td></tr>
+                        <tr><td>2</td><td>Ardath</td><td>Late Winter</td><td>Quickening</td></tr>
+                        <tr class="highlight"><td>3</td><td>Nascath</td><td>Spring</td><td>🐾 BIRTH</td></tr>
+                        <tr><td>4</td><td>Florath</td><td>Late Spring</td><td>Bonding ceremonies</td></tr>
+                        <tr><td>5</td><td>Cresath</td><td>Early Summer</td><td>Cubs growing</td></tr>
+                        <tr><td>6</td><td>Plenath</td><td>Midsummer</td><td>Weaning</td></tr>
+                        <tr><td>7</td><td>Mesath</td><td>Late Summer</td><td>Patterns emerge</td></tr>
+                        <tr><td>8</td><td>Calmeth</td><td>Early Autumn</td><td>Calm period</td></tr>
+                        <tr><td>9</td><td>Cadath</td><td>Mid Autumn</td><td>Mourning rituals</td></tr>
+                        <tr><td>10</td><td>Munath</td><td>Late Autumn</td><td>Preparation</td></tr>
+                        <tr class="highlight"><td>11</td><td>Nivath</td><td>Winter</td><td>🔥 BREEDING</td></tr>
+                        <tr><td>12</td><td>Umbreth</td><td>Deep Winter</td><td>Pregnancy month 1</td></tr>
+                    </tbody>
+                </table></div>
+                <div class="sidebar warning">
+                    <div class="sidebar-header"><span class="sidebar-tag">Warning</span><span class="sidebar-title">Nivath Wisdom</span></div>
+                    <div class="sidebar-text">"Nivath is the fire in the snow. Prepare in Munath. By the time you feel the heat rising, it is too late."</div>
+                </div>`
+            },
+            "what-is-pinnagryph": {
+                title: "What Is a Pinnagryph?",
+                content: `<p>The Pinnagryph is a large, amphibious predator found throughout Vaeloris. Part cat, part seal, part something entirely its own—it is the primary companion species of bonded riders across all six realms.</p>
+                <div class="sidebar">
+                    <div class="sidebar-header"><span class="sidebar-tag">Field</span><span class="sidebar-title">"Not Stitched Together"</span></div>
+                    <div class="sidebar-text">"The first time you see one, you think 'seal head on a cat.' The second time you see one swim, you stop thinking that way. The shape is unified."</div>
+                    <div class="sidebar-source">— North Pass Warden</div>
+                </div>
+                <h2>The Unified Shape</h2>
+                <p>Every feature serves dual purposes for land and water:</p>
+                <ul>
+                    <li><strong>Head:</strong> Streamlined for water, powerful jaws for land hunting</li>
+                    <li><strong>Limbs:</strong> Muscular with webbed paws for swimming</li>
+                    <li><strong>Tail:</strong> Rudder in water, counterbalance on cliffs</li>
+                    <li><strong>Coat:</strong> Dense enough for glacial lakes, sheds water in seconds</li>
+                    <li><strong>Plumage:</strong> Ruff and tail-fan for display and protection</li>
+                </ul>
+                <div class="sidebar danger">
+                    <div class="sidebar-header"><span class="sidebar-tag">Danger</span><span class="sidebar-title">The Warden's Rule</span></div>
+                    <div class="sidebar-text">"Never position yourself between a Pinnagryph and its route to water. If you block the door, you become the problem."</div>
+                </div>
+                <h2>The Water Imperative</h2>
+                <p>A Pinnagryph's relationship to water is existential. They hunt in it, escape through it, and den beside it. Domestic Pinnagryphs become agitated if denied water routes. This is biology, not conditioning.</p>`
+            },
+            "anatomy": {
+                title: "Physical Anatomy",
+                content: `<h2>Size and Weight</h2>
+                <div class="data-table-wrapper"><table class="data-table">
+                    <thead><tr><th>Measure</th><th>Female</th><th>Male</th></tr></thead>
+                    <tbody>
+                        <tr><td>Height</td><td>5.5-6 ft</td><td>6.5-7 ft</td></tr>
+                        <tr><td>Length</td><td>5.5-6 ft</td><td>6.5-7.5 ft</td></tr>
+                        <tr><td>Weight</td><td>250-320 lbs</td><td>350-450 lbs</td></tr>
+                    </tbody>
+                </table></div>
+                <p><em>Note:</em> Alpha-class are 10-15% larger; Omega-class are 10-15% smaller.</p>
+                <h2>Key Features</h2>
+                <ul>
+                    <li><strong>Eyes:</strong> Large with nictitating membrane for underwater vision</li>
+                    <li><strong>Vibrissae:</strong> Sensitive whiskers—<strong>never trim them</strong></li>
+                    <li><strong>Ears:</strong> 180° rotation capability, flatten for swimming</li>
+                    <li><strong>Teeth:</strong> Saber canines extending 1.2-2 inches</li>
+                </ul>
+                <h2>The Coat</h2>
+                <p>Approximately <strong>26,000 hairs per cm²</strong>—extraordinarily dense waterproof barrier.</p>
+                <div class="sidebar danger">
+                    <div class="sidebar-header"><span class="sidebar-tag">Critical</span><span class="sidebar-title">The Soap Rule</span></div>
+                    <div class="sidebar-text">"Never use soap on a Pinnagryph's coat. It strips waterproofing oils and can cause hypothermia. Clean water only."</div>
+                </div>
+                <h2>Enhanced Musculature</h2>
+                <p>Muscle fibers generate <strong>65% more force</strong> than typical mammals, allowing them to carry <strong>60-65% of body weight</strong>.</p>`
+            },
+            "lifecycle": {
+                title: "Lifecycle",
+                content: `<h2>Development Timeline</h2>
+                <div class="data-table-wrapper"><table class="data-table">
+                    <thead><tr><th>Age</th><th>Size</th><th>Development</th></tr></thead>
+                    <tbody>
+                        <tr><td>Newborn</td><td>8-10 in, 3-5 lbs</td><td>Blind, deaf, brown down</td></tr>
+                        <tr class="highlight"><td>1-3 mo</td><td>1.5-2 ft, 15-35 lbs</td><td>BONDING WINDOW</td></tr>
+                        <tr><td>3-6 mo</td><td>2-2.5 ft, 35-70 lbs</td><td>Ghost markings</td></tr>
+                        <tr><td>6-12 mo</td><td>2.5-3 ft, 70-100 lbs</td><td>Adult coat</td></tr>
+                        <tr><td>12-24 mo</td><td>3-5 ft, 130-250 lbs</td><td>Light riding</td></tr>
+                        <tr><td>24+ mo</td><td>4-6.5 ft, 250-450 lbs</td><td>Full adult</td></tr>
+                    </tbody>
+                </table></div>
+                <div class="sidebar">
+                    <div class="sidebar-header"><span class="sidebar-tag">Registry</span><span class="sidebar-title">The Brown Cub Rule</span></div>
+                    <div class="sidebar-text">"All cubs are born solid brown. Breed identification is impossible at birth. You bond to the soul, not the spots."</div>
+                </div>
+                <div class="sidebar danger">
+                    <div class="sidebar-header"><span class="sidebar-tag">Critical</span><span class="sidebar-title">Bonding Window</span></div>
+                    <div class="sidebar-text">Opens when eyes focus (10-14 days), closes within two weeks. This timing is biological, not cultural.</div>
+                </div>
+                <h2>Lifespan</h2>
+                <ul>
+                    <li><strong>Wild:</strong> 35-40 years</li>
+                    <li><strong>Bonded:</strong> Up to 50 years</li>
+                </ul>`
+            },
+            "temperament": {
+                title: "Temperament Classes",
+                content: `<p>Three distinct temperament classes are observable from approximately six months of age.</p>
+                <h2>Alpha-Class (~20%)</h2>
+                <p><strong>Physical:</strong> Largest (males 7-7.5 ft, 400-500 lbs). Prominent ruffs.</p>
+                <p><strong>Behavioral:</strong> Assertive, confident, natural leaders. First to investigate.</p>
+                <p><strong>Best for:</strong> Protection, heavy transport, experienced handlers.</p>
+                <div class="sidebar warning">
+                    <div class="sidebar-header"><span class="sidebar-tag">Caution</span><span class="sidebar-title">Alpha Warning</span></div>
+                    <div class="sidebar-text">Alpha-class bonded to inexperienced handlers may develop problems. They need partners who can match their energy.</div>
+                </div>
+                <h2>Beta-Class (~55%)</h2>
+                <p><strong>Physical:</strong> Medium build (males 6.5-7 ft, 350-450 lbs).</p>
+                <p><strong>Behavioral:</strong> Adaptable, balanced, responsive. The "generalist" class.</p>
+                <p><strong>Best for:</strong> General riding, patrol, any experience level.</p>
+                <h2>Omega-Class (~25%)</h2>
+                <p><strong>Physical:</strong> Smaller (males 6-6.5 ft, 300-400 lbs). Delicate features.</p>
+                <p><strong>Behavioral:</strong> Gentle, sensitive, nurturing. Conflict-avoidant.</p>
+                <p><strong>Best for:</strong> Therapy, cub-rearing, companionship.</p>
+                <div class="sidebar">
+                    <div class="sidebar-header"><span class="sidebar-tag">Important</span><span class="sidebar-title">No Class Is "Better"</span></div>
+                    <div class="sidebar-text">Each serves essential functions. A healthy pack includes all three types.</div>
+                </div>`
+            }
+        }
+    },
+    book2: {
+        title: "Book Two: The Breed Atlas",
+        subtitle: "Coat Patterns & Varieties",
+        chapters: {
+            "breed-overview": {
+                title: "Breed Classification",
+                content: `<p>All breeds are <strong>one species—fully interfertile</strong>. "Breed" refers to coat pattern and regional adaptation, not separate species.</p>
+                <p>Names follow: <strong>[Regional Prefix] + [Base Breed]</strong></p>
+                <div class="sidebar quote">
+                    <div class="sidebar-header"><span class="sidebar-tag">Registry</span><span class="sidebar-title">Bond to the Soul</span></div>
+                    <div class="sidebar-text">"All cubs are born solid brown. Patterns emerge at 3-6 months. The Soul Tie forms before pattern emerges."</div>
+                </div>
+                <h2>Nine Base Breeds</h2>
+                <div class="breed-grid">
+                    <div class="breed-card"><div class="breed-pattern rosettes"></div><div class="breed-info"><div class="breed-name">Pinnapard</div><div class="breed-desc">Rosettes (Leopard)</div></div></div>
+                    <div class="breed-card"><div class="breed-pattern stripes"></div><div class="breed-info"><div class="breed-name">Pinnatigris</div><div class="breed-desc">Stripes (Tiger)</div></div></div>
+                    <div class="breed-card"><div class="breed-pattern rosettes"></div><div class="breed-info"><div class="breed-name">Pinnaguar</div><div class="breed-desc">Rosettes+spots</div></div></div>
+                    <div class="breed-card"><div class="breed-pattern solid-gold"></div><div class="breed-info"><div class="breed-name">Pinnaleo</div><div class="breed-desc">Solid tawny</div></div></div>
+                    <div class="breed-card"><div class="breed-pattern solid-gold"></div><div class="breed-info"><div class="breed-name">Pinnacheetah</div><div class="breed-desc">Spots+tears</div></div></div>
+                    <div class="breed-card"><div class="breed-pattern solid-tan"></div><div class="breed-info"><div class="breed-name">Pinnapuma</div><div class="breed-desc">Solid muted</div></div></div>
+                    <div class="breed-card"><div class="breed-pattern melanistic"></div><div class="breed-info"><div class="breed-name">Pinnapanther</div><div class="breed-desc">Melanistic</div></div></div>
+                    <div class="breed-card"><div class="breed-pattern leucistic"></div><div class="breed-info"><div class="breed-name">Pinnaghost</div><div class="breed-desc">Leucistic</div></div></div>
+                    <div class="breed-card"><div class="breed-pattern rosettes"></div><div class="breed-info"><div class="breed-name">Pinnamarble</div><div class="breed-desc">Swirled</div></div></div>
+                </div>
+                <h2>Regional Prefixes</h2>
+                <div class="data-table-wrapper"><table class="data-table">
+                    <thead><tr><th>Type</th><th>Prefixes</th></tr></thead>
+                    <tbody>
+                        <tr><td>Mountain</td><td>Snow, Arctic, Frost, Storm</td></tr>
+                        <tr><td>Rainforest</td><td>Amazonian, Emerald, Kethroot</td></tr>
+                        <tr><td>Wetland</td><td>Marsh, Delta, Reedstripe</td></tr>
+                        <tr><td>Coastal</td><td>Glass, Windscar, Saltfan</td></tr>
+                        <tr><td>Desert</td><td>Oasis, Saffron, Dune</td></tr>
+                        <tr><td>Cold Coast</td><td>Fjord, Obsidian, Siberian</td></tr>
+                    </tbody>
+                </table></div>
+                <h2>Conservation</h2>
+                <div class="data-table-wrapper"><table class="data-table">
+                    <thead><tr><th>Breed</th><th>Status</th><th>Wild Pop.</th></tr></thead>
+                    <tbody>
+                        <tr><td>Pinnatigris</td><td>Endangered</td><td>~2,000-3,500</td></tr>
+                        <tr><td>Pinnaghost</td><td>Rare</td><td>~200-500</td></tr>
+                        <tr><td>Pinnapuma</td><td>Least Concern</td><td>~4,000-6,000</td></tr>
+                    </tbody>
+                </table></div>`
+            }
+        }
+    },
+    book3: {
+        title: "Book Three: The Soul Tie",
+        subtitle: "Bond Phenomena & Shared Life",
+        chapters: {
+            "primary-bond": {
+                title: "The Primary Bond",
+                content: `<p>The Soul Tie is a telepathic and empathic bond between a Pinnagryph and a human. It is documented, consistent across cultures, and observable in its effects on both partners.</p>
+                <div class="sidebar quote">
+                    <div class="sidebar-header"><span class="sidebar-tag">Universal</span><span class="sidebar-title">First Principle</span></div>
+                    <div class="sidebar-text">"The bond chooses the pair. The work keeps them alive."</div>
+                </div>
+                <h2>Characteristics</h2>
+                <ul>
+                    <li><strong>Lifelong:</strong> Persists until death of one partner</li>
+                    <li><strong>Exclusive:</strong> One human, one Pinnagryph</li>
+                    <li><strong>Mutual:</strong> Both share equally</li>
+                    <li><strong>Cub-Initiated:</strong> The cub chooses</li>
+                </ul>
+                <h2>What It Provides</h2>
+                <ul>
+                    <li><strong>Emotional Sharing:</strong> Direct experience of partner's emotions</li>
+                    <li><strong>Proximity Awareness:</strong> General sense of location</li>
+                    <li><strong>Sensory Echoes:</strong> Brief flashes of partner's senses</li>
+                </ul>
+                <h2>What It Does NOT Provide</h2>
+                <ul>
+                    <li><strong>Telepathic Speech:</strong> No word transmission</li>
+                    <li><strong>Mind Reading:</strong> Cannot access thoughts</li>
+                    <li><strong>Remote Control:</strong> Neither can compel the other</li>
+                </ul>
+                <div class="sidebar warning">
+                    <div class="sidebar-header"><span class="sidebar-tag">Warning</span><span class="sidebar-title">New Rider</span></div>
+                    <div class="sidebar-text">"You will feel what they feel. This includes fear, pain, and confusion. Prepare for difficult feelings, not just pleasant ones."</div>
+                </div>`
+            },
+            "bond-formation": {
+                title: "Bond Formation",
+                content: `<h2>The Bonding Window</h2>
+                <p>Opens when eyes focus (10-14 days after birth), closes within two weeks. This is biological.</p>
+                <h2>The Choosing</h2>
+                <p><strong>The cub chooses the human. This is universal and non-negotiable.</strong></p>
+                <div class="sidebar quote">
+                    <div class="sidebar-header"><span class="sidebar-tag">Universal</span><span class="sidebar-title">The Choosing</span></div>
+                    <div class="sidebar-text">"The cub walks where the cub walks. Do not guide, lure, or push. The soul knows its match."</div>
+                </div>
+                <div class="sidebar danger">
+                    <div class="sidebar-header"><span class="sidebar-tag">Critical</span><span class="sidebar-title">Threshold Rule</span></div>
+                    <div class="sidebar-text">"Once you enter the bonding space, you must accept any cub who chooses you. You cannot enter 'just to watch.' There is no going back."</div>
+                </div>`
+            },
+            "cycle-echo": {
+                title: "The Cycle Echo",
+                content: `<p>The Cycle Echo passes physiological and emotional effects through the bond during reproductive cycles.</p>
+                <h2>Physical Effects</h2>
+                <ul>
+                    <li>Elevated temperature</li>
+                    <li>Restlessness</li>
+                    <li>Appetite changes</li>
+                    <li>Sleep disruption</li>
+                </ul>
+                <h2>Emotional Effects</h2>
+                <ul>
+                    <li>Heightened emotionality</li>
+                    <li>Reduced impulse control</li>
+                    <li>Difficulty concentrating</li>
+                </ul>
+                <div class="sidebar warning">
+                    <div class="sidebar-header"><span class="sidebar-tag">Warning</span><span class="sidebar-title">First Heat</span></div>
+                    <div class="sidebar-text">"You cannot prepare for how much you will feel it. Accept that you will be compromised. Plan accordingly."</div>
+                </div>
+                <h2>The Retreat</h2>
+                <p>Mandatory isolation during first heat/rut (5-10 days). Protects humans from compromised decisions.</p>`
+            },
+            "mate-bond": {
+                title: "The Mate Bond",
+                content: `<h2>The Pull</h2>
+                <p>When two bonded Pinnagryphs mate, their humans experience <strong>The Pull</strong>—powerful romantic attraction transmitted through the bond.</p>
+                <ul>
+                    <li>Simultaneous for both humans</li>
+                    <li>Peaks during heat/rut</li>
+                    <li>Persists at baseline between cycles</li>
+                </ul>
+                <h2>Quad Bonds</h2>
+                <p>Two humans + two Pinnagryphs linked by Soul Ties and Mate Bond—the strongest social units in bonded culture.</p>
+                <div class="sidebar">
+                    <div class="sidebar-header"><span class="sidebar-tag">Important</span><span class="sidebar-title">Cooling Clause</span></div>
+                    <div class="sidebar-text">Wait at least one full cycle before permanent commitments. Heat-addled decisions are often poor decisions.</div>
+                </div>`
+            }
+        }
+    },
+    book4: {
+        title: "Book Four: The Six Realms",
+        subtitle: "Geography, Cultures & Peoples",
+        chapters: {
+            "realm-overview": {
+                title: "Overview of Vaeloris",
+                content: `<p>The six realms share: the Soul Tie, water reverence, threshold ethics, pack structure, and mutual obligation.</p>
+                <div class="realm-grid">
+                    <div class="realm-card"><div class="realm-banner skyspine"><div class="realm-banner-title">Skyspine Range</div></div><div class="realm-body"><div class="realm-culture">The Kaelthari</div><div class="realm-desc">Mountains, glacial lakes. Four-Eyes governance.</div><div class="realm-stats"><div class="realm-stat"><strong>138k</strong> pop.</div><div class="realm-stat"><strong>35k</strong> Pinnagryphs</div></div></div></div>
+                    <div class="realm-card"><div class="realm-banner emerald"><div class="realm-banner-title">Emerald Basin</div></div><div class="realm-body"><div class="realm-culture">The Kethrani</div><div class="realm-desc">Rainforest, blackwater rivers. Water Witness.</div><div class="realm-stats"><div class="realm-stat"><strong>365k</strong> pop.</div><div class="realm-stat"><strong>95k</strong> Pinnagryphs</div></div></div></div>
+                    <div class="realm-card"><div class="realm-banner lanternwater"><div class="realm-banner-title">Lanternwater</div></div><div class="realm-body"><div class="realm-culture">The Lanternfolk</div><div class="realm-desc">Urban delta. Home to the Registry.</div><div class="realm-stats"><div class="realm-stat"><strong>545k</strong> pop.</div><div class="realm-stat"><strong>180k</strong> Pinnagryphs</div></div></div></div>
+                    <div class="realm-card"><div class="realm-banner glasscoast"><div class="realm-banner-title">Glasscoast</div></div><div class="realm-body"><div class="realm-culture">The Windscari</div><div class="realm-desc">Sea cliffs, tidal caves. Edge Principle.</div><div class="realm-stats"><div class="realm-stat"><strong>122k</strong> pop.</div><div class="realm-stat"><strong>40k</strong> Pinnagryphs</div></div></div></div>
+                    <div class="realm-card"><div class="realm-banner saffron"><div class="realm-banner-title">Saffron Wastes</div></div><div class="realm-body"><div class="realm-culture">The Talari</div><div class="realm-desc">Desert, oasis chains. Water Law.</div><div class="realm-stats"><div class="realm-stat"><strong>108k</strong> pop.</div><div class="realm-stat"><strong>28k</strong> Pinnagryphs</div></div></div></div>
+                    <div class="realm-card"><div class="realm-banner obsidian"><div class="realm-banner-title">Obsidian Fjords</div></div><div class="realm-body"><div class="realm-culture">The Fjordborn</div><div class="realm-desc">Cold coasts, glaciers. Hearthlaw.</div><div class="realm-stats"><div class="realm-stat"><strong>83k</strong> pop.</div><div class="realm-stat"><strong>22k</strong> Pinnagryphs</div></div></div></div>
+                </div>
+                <h2>Total Population</h2>
+                <div class="stats-row">
+                    <div class="stat-card"><div class="stat-value">1.36M</div><div class="stat-label">Humans</div></div>
+                    <div class="stat-card"><div class="stat-value">333k</div><div class="stat-label">Bonded</div></div>
+                    <div class="stat-card"><div class="stat-value">400k</div><div class="stat-label">Pinnagryphs</div></div>
+                </div>`
+            },
+            "skyspine": {
+                title: "The Skyspine Range",
+                content: `<h2>Geography</h2>
+                <p>Massive mountain chain. Peaks to 27,900 ft. Glacial lakes, swift rivers. Cold alpine; -40°F in winter to 60°F in summer.</p>
+                <h2>The Kaelthari</h2>
+                <ul>
+                    <li><strong>Stone-Shelter:</strong> Mountain protects and threatens</li>
+                    <li><strong>Four-Eyes:</strong> Human and Pinnagryph see together</li>
+                    <li><strong>Winter Law:</strong> Survival requires honesty and aid</li>
+                </ul>
+                <div class="sidebar quote">
+                    <div class="sidebar-header"><span class="sidebar-tag">Quote</span><span class="sidebar-title">"Four Eyes See True"</span></div>
+                    <div class="sidebar-text">"What one pair of eyes misses, another sees. This is why the bonded lead."</div>
+                </div>
+                <h2>Proverbs</h2>
+                <ul>
+                    <li><em>"The mountain does not hurry, but the pass closes anyway"</em></li>
+                    <li><em>"Stone breaks water, water shapes stone"</em></li>
+                </ul>`
+            },
+            "emerald-basin": {
+                title: "The Emerald Basin",
+                content: `<h2>Geography</h2>
+                <p>Vast rainforest with blackwater rivers. Hot and humid (70-95°F). Seasonal flooding expected.</p>
+                <h2>The Kethrani</h2>
+                <ul>
+                    <li><strong>River-Mind:</strong> Life flows; adaptation is wisdom</li>
+                    <li><strong>Water Witness:</strong> Important events beside flowing water</li>
+                    <li><strong>Flood Acceptance:</strong> Flood is renewal, not disaster</li>
+                </ul>
+                <div class="sidebar">
+                    <div class="sidebar-header"><span class="sidebar-tag">Field</span><span class="sidebar-title">Heavy-Water Hunters</span></div>
+                    <div class="sidebar-text">"The Pinnaguar drifts into position like a log, then explodes upward. Watch the waterline."</div>
+                </div>
+                <h2>Proverbs</h2>
+                <ul>
+                    <li><em>"The river goes where it will; the wise go where the river goes"</em></li>
+                    <li><em>"Fight the current and drown"</em></li>
+                </ul>`
+            }
+        }
+    },
+    book5: {
+        title: "Book Five: Ceremonies",
+        subtitle: "Sacred Rituals",
+        chapters: {
+            "bonding-ceremony": {
+                title: "The Bonding Ceremony",
+                content: `<p>The bonding ceremony—when cub and human first meet—is the most sacred event in Pinnagryph culture.</p>
+                <h2>Universal Elements</h2>
+                <ul>
+                    <li><strong>Threshold:</strong> Boundary candidates cross</li>
+                    <li><strong>Choosing:</strong> Cubs select humans</li>
+                    <li><strong>Binding:</strong> Contact seals bond</li>
+                    <li><strong>Witness:</strong> Community acknowledgment</li>
+                </ul>
+                <div class="sidebar danger">
+                    <div class="sidebar-header"><span class="sidebar-tag">Critical</span><span class="sidebar-title">Threshold Rule</span></div>
+                    <div class="sidebar-text">"Once you cross, you cannot refuse. The cub chooses. You accept."</div>
+                </div>
+                <h2>Regional Variations</h2>
+                <div class="data-table-wrapper"><table class="data-table">
+                    <thead><tr><th>Realm</th><th>Threshold</th></tr></thead>
+                    <tbody>
+                        <tr><td>Skyspine</td><td>Stone doorway</td></tr>
+                        <tr><td>Emerald Basin</td><td>Flowing stream</td></tr>
+                        <tr><td>Lanternwater</td><td>Registry room</td></tr>
+                        <tr><td>Glasscoast</td><td>Tidal cave</td></tr>
+                        <tr><td>Saffron</td><td>Oasis pool</td></tr>
+                        <tr><td>Obsidian</td><td>Fire circle</td></tr>
+                    </tbody>
+                </table></div>
+                <h2>Water Vigil</h2>
+                <p>Universal mourning—sitting beside water after bond loss.</p>`
+            }
+        }
+    },
+    book6: {
+        title: "Survival Guides",
+        subtitle: "Care & Threats",
+        chapters: {
+            "daily-care": {
+                title: "Daily Care",
+                content: `<div class="sidebar quote">
+                    <div class="sidebar-header"><span class="sidebar-tag">Field</span><span class="sidebar-title">Pack-Work</span></div>
+                    <div class="sidebar-text">"If you cannot groom together, you cannot travel together."</div>
+                </div>
+                <h2>Nightly Routine</h2>
+                <ol>
+                    <li><strong>Feed:</strong> 8-15 lbs meat</li>
+                    <li><strong>Water:</strong> Confirm access</li>
+                    <li><strong>Check:</strong> Injuries, paws, ruff</li>
+                    <li><strong>Bond:</strong> Physical affection</li>
+                </ol>
+                <div class="sidebar danger">
+                    <div class="sidebar-header"><span class="sidebar-tag">Danger</span><span class="sidebar-title">Soap Rule</span></div>
+                    <div class="sidebar-text">"Never use soap. Clean water only."</div>
+                </div>`
+            },
+            "threats": {
+                title: "Human Threats",
+                content: `<p>Greatest threat: humans who oppose or exploit the bond.</p>
+                <h2>Silencers</h2>
+                <p>Extremists who murder bonded pairs.</p>
+                <h2>The Gilded</h2>
+                <p>Trafficking networks selling to collectors.</p>
+                <div class="sidebar danger">
+                    <div class="sidebar-header"><span class="sidebar-tag">Critical</span><span class="sidebar-title">Trafficking</span></div>
+                    <div class="sidebar-text">Capital offense. Report to Wardens—never solo rescue.</div>
+                </div>`
+            },
+            "red-watch": {
+                title: "Red Watch",
+                content: `<p>When a Pinnagryph perceives mortal danger, they enter <strong>Red Watch</strong>—unstoppable combat.</p>
+                <div class="sidebar danger">
+                    <div class="sidebar-header"><span class="sidebar-tag">Critical</span><span class="sidebar-title">Cannot Stop</span></div>
+                    <div class="sidebar-text">This is biological. Prevention is the only strategy.</div>
+                </div>
+                <h2>Triggers</h2>
+                <ul>
+                    <li>Attack on human</li>
+                    <li>Lethal threat perceived</li>
+                    <li>Human's extreme fear</li>
+                </ul>`
+            }
+        }
+    },
+    appendices: {
+        title: "Appendices",
+        subtitle: "Reference",
+        chapters: {
+            "glossary": {
+                title: "Glossary",
+                content: `<div class="data-table-wrapper"><table class="data-table">
+                    <thead><tr><th>Term</th><th>Meaning</th></tr></thead>
+                    <tbody>
+                        <tr><td><strong>Soul Tie</strong></td><td>Primary bond</td></tr>
+                        <tr><td><strong>Cycle Echo</strong></td><td>Heat/rut symptoms</td></tr>
+                        <tr><td><strong>Red Watch</strong></td><td>Combat state</td></tr>
+                        <tr><td><strong>The Pull</strong></td><td>Mate attraction</td></tr>
+                        <tr><td><strong>Quad Bond</strong></td><td>2+2 family</td></tr>
+                        <tr><td><strong>Four-Eyes</strong></td><td>Kaelthari law</td></tr>
+                        <tr><td><strong>Water Witness</strong></td><td>Kethrani law</td></tr>
+                        <tr><td><strong>The Gilded</strong></td><td>Traffickers</td></tr>
+                    </tbody>
+                </table></div>`
+            },
+            "pronunciation": {
+                title: "Pronunciation",
+                content: `<div class="data-table-wrapper"><table class="data-table">
+                    <thead><tr><th>Word</th><th>Say</th></tr></thead>
+                    <tbody>
+                        <tr><td>Vaeloris</td><td>vay-LOR-is</td></tr>
+                        <tr><td>Kaelthari</td><td>kale-THAR-ee</td></tr>
+                        <tr><td>Kethrani</td><td>keth-RAH-nee</td></tr>
+                        <tr><td>Pinnagryph</td><td>PIN-uh-griff</td></tr>
+                        <tr><td>Nascath</td><td>NASS-ath</td></tr>
+                        <tr><td>Nivath</td><td>NIV-ath</td></tr>
+                    </tbody>
+                </table></div>`
+            }
+        }
+    }
+};
+
+// ============================================
+// PWA & UPDATE FUNCTIONALITY
+// ============================================
+
+const APP_VERSION = '1.0.0';
+let deferredPrompt = null;
+
+// Check for updates on visibility change
+document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'visible') {
+        checkForUpdates();
+    }
+});
+
+window.addEventListener('focus', checkForUpdates);
+
+function checkForUpdates() {
+    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({ type: 'CHECK_UPDATE' });
+    }
+}
+
+// Listen for update messages from service worker
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.addEventListener('message', function(event) {
+        if (event.data && event.data.type === 'UPDATE_ACTIVATED') {
+            showUpdateBanner();
+        }
+    });
+}
+
+function showUpdateBanner() {
+    document.getElementById('updateBanner').classList.add('visible');
+}
+
+// Install prompt
+window.addEventListener('beforeinstallprompt', function(e) {
+    e.preventDefault();
+    deferredPrompt = e;
+    setTimeout(function() {
+        if (deferredPrompt && !localStorage.getItem('installDismissed')) {
+            document.getElementById('installPrompt').classList.add('visible');
+        }
+    }, 3000);
+});
+
+function installApp() {
+    if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(function() {
+            deferredPrompt = null;
+            document.getElementById('installPrompt').classList.remove('visible');
+        });
+    }
+}
+
+function dismissInstall() {
+    document.getElementById('installPrompt').classList.remove('visible');
+    localStorage.setItem('installDismissed', 'true');
+}
+
+// Register service worker
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+        navigator.serviceWorker.register('./sw.js').then(function(reg) {
+            console.log('SW registered');
+            setInterval(function() { reg.update(); }, 60000);
+            
+            reg.addEventListener('updatefound', function() {
+                const newWorker = reg.installing;
+                newWorker.addEventListener('statechange', function() {
+                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                        showUpdateBanner();
+                    }
+                });
+            });
+        }).catch(function(err) {
+            console.log('SW failed:', err);
+        });
+    });
+}
+
+// ============================================
+// BOOK NAVIGATION
+// ============================================
+
+let allChapters = [];
+let currentChapterIndex = 0;
+
+function buildTOC() {
+    const tocContent = document.getElementById('tocContent');
+    let html = '';
+    
+    Object.entries(bookData).forEach(function(entry) {
+        const bookKey = entry[0];
+        const book = entry[1];
+        const chapterKeys = Object.keys(book.chapters);
+        
+        chapterKeys.forEach(function(chapterKey) {
+            allChapters.push({
+                bookKey: bookKey,
+                chapterKey: chapterKey,
+                bookTitle: book.title,
+                chapterTitle: book.chapters[chapterKey].title
+            });
+        });
+        
+        html += '<div class="toc-book">';
+        html += '<div class="toc-book-header" data-book="' + bookKey + '">';
+        html += '<span class="toc-book-num">' + (book.subtitle ? 'BOOK' : '') + '</span>';
+        html += '<span class="toc-book-title">' + book.title + '</span>';
+        html += '<span class="toc-expand">▾</span>';
+        html += '</div>';
+        html += '<div class="toc-chapters" id="chapters-' + bookKey + '">';
+        
+        chapterKeys.forEach(function(chapterKey) {
+            html += '<div class="toc-chapter" data-book="' + bookKey + '" data-chapter="' + chapterKey + '">';
+            html += book.chapters[chapterKey].title;
+            html += '</div>';
+        });
+        
+        html += '</div></div>';
+    });
+    
+    tocContent.innerHTML = html;
+    
+    // Touch-friendly event handlers
+    document.querySelectorAll('.toc-book-header').forEach(function(header) {
+        header.addEventListener('click', function(e) {
+            e.preventDefault();
+            const bookKey = this.getAttribute('data-book');
+            this.classList.toggle('expanded');
+            document.getElementById('chapters-' + bookKey).classList.toggle('expanded');
+        });
+    });
+    
+    document.querySelectorAll('.toc-chapter').forEach(function(chapter) {
+        chapter.addEventListener('click', function(e) {
+            e.preventDefault();
+            const bookKey = this.getAttribute('data-book');
+            const chapterKey = this.getAttribute('data-chapter');
+            navigateToChapter(bookKey, chapterKey);
+        });
+    });
+}
+
+function navigateToChapter(bookKey, chapterKey) {
+    const book = bookData[bookKey];
+    const chapter = book.chapters[chapterKey];
+    
+    currentChapterIndex = allChapters.findIndex(function(c) {
+        return c.bookKey === bookKey && c.chapterKey === chapterKey;
+    });
+    
+    // Save reading position
+    try {
+        localStorage.setItem('lastChapter', bookKey + ':' + chapterKey);
+    } catch(e) {}
+    
+    let html = '<div class="chapter-header">';
+    html += '<div class="chapter-book-ref">' + book.title + '</div>';
+    html += '<h1 class="chapter-title">' + chapter.title + '</h1>';
+    if (book.subtitle) {
+        html += '<div class="chapter-subtitle">' + book.subtitle + '</div>';
+    }
+    html += '</div>';
+    html += '<div class="prose">' + chapter.content + '</div>';
+    
+    // Navigation buttons
+    const prevChapter = allChapters[currentChapterIndex - 1];
+    const nextChapter = allChapters[currentChapterIndex + 1];
+    
+    html += '<div class="chapter-nav">';
+    if (prevChapter) {
+        html += '<button class="chapter-nav-btn" onclick="navigateToChapter(\'' + prevChapter.bookKey + '\', \'' + prevChapter.chapterKey + '\')">← Prev</button>';
+    } else {
+        html += '<button class="chapter-nav-btn disabled">← Prev</button>';
+    }
+    if (nextChapter) {
+        html += '<button class="chapter-nav-btn" onclick="navigateToChapter(\'' + nextChapter.bookKey + '\', \'' + nextChapter.chapterKey + '\')">Next →</button>';
+    } else {
+        html += '<button class="chapter-nav-btn disabled">Next →</button>';
+    }
+    html += '</div>';
+    
+    document.getElementById('pageContent').innerHTML = html;
+    
+    // Update TOC highlighting
+    document.querySelectorAll('.toc-chapter').forEach(function(c) { 
+        c.classList.remove('active'); 
+    });
+    document.querySelectorAll('.toc-book-header').forEach(function(h) { 
+        h.classList.remove('active'); 
+    });
+    
+    const activeChapter = document.querySelector('.toc-chapter[data-book="' + bookKey + '"][data-chapter="' + chapterKey + '"]');
+    if (activeChapter) {
+        activeChapter.classList.add('active');
+        const parentBook = document.querySelector('.toc-book-header[data-book="' + bookKey + '"]');
+        if (parentBook) {
+            parentBook.classList.add('active', 'expanded');
+            document.getElementById('chapters-' + bookKey).classList.add('expanded');
+        }
+    }
+    
+    updateProgress();
+    
+    // Scroll to top smoothly
+    document.getElementById('bookPage').scrollTo({ top: 0, behavior: 'smooth' });
+    
+    // Close mobile sidebar
+    closeSidebar();
+}
+
+function updateProgress() {
+    const progress = ((currentChapterIndex + 1) / allChapters.length) * 100;
+    document.getElementById('progressFill').style.width = progress + '%';
+    document.getElementById('progressText').textContent = Math.round(progress) + '% (' + (currentChapterIndex + 1) + '/' + allChapters.length + ')';
+}
+
+// ============================================
+// SEARCH
+// ============================================
+
+document.getElementById('searchInput').addEventListener('input', function(e) {
+    const query = e.target.value.toLowerCase().trim();
+    const searchResults = document.getElementById('searchResults');
+    
+    if (query.length < 2) { 
+        searchResults.classList.remove('active'); 
+        return; 
+    }
+    
+    const results = [];
+    Object.entries(bookData).forEach(function(entry) {
+        const bookKey = entry[0];
+        const book = entry[1];
+        Object.entries(book.chapters).forEach(function(chEntry) {
+            const chapterKey = chEntry[0];
+            const chapter = chEntry[1];
+            const titleMatch = chapter.title.toLowerCase().indexOf(query) !== -1;
+            const contentMatch = chapter.content.toLowerCase().indexOf(query) !== -1;
+            if (titleMatch || contentMatch) {
+                results.push({ 
+                    bookKey: bookKey, 
+                    chapterKey: chapterKey, 
+                    title: chapter.title, 
+                    bookTitle: book.title 
+                });
+            }
+        });
+    });
+    
+    if (results.length > 0) {
+        let html = '';
+        results.slice(0, 6).forEach(function(r) {
+            html += '<div class="search-result" data-book="' + r.bookKey + '" data-chapter="' + r.chapterKey + '">';
+            html += '<div class="search-result-title">' + r.title + '</div>';
+            html += '<div class="search-result-context">' + r.bookTitle + '</div>';
+            html += '</div>';
+        });
+        searchResults.innerHTML = html;
+        
+        // Add click handlers
+        searchResults.querySelectorAll('.search-result').forEach(function(el) {
+            el.addEventListener('click', function() {
+                navigateToChapter(this.getAttribute('data-book'), this.getAttribute('data-chapter'));
+                searchResults.classList.remove('active');
+                document.getElementById('searchInput').value = '';
+            });
+        });
+    } else {
+        searchResults.innerHTML = '<div class="search-result"><div class="search-result-title">No results</div></div>';
+    }
+    searchResults.classList.add('active');
+});
+
+// Close search on blur
+document.getElementById('searchInput').addEventListener('blur', function() {
+    setTimeout(function() {
+        document.getElementById('searchResults').classList.remove('active');
+    }, 200);
+});
+
+// ============================================
+// MOBILE SIDEBAR
+// ============================================
+
+function openSidebar() {
+    document.getElementById('tocSidebar').classList.add('open');
+    document.getElementById('overlay').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeSidebar() {
+    document.getElementById('tocSidebar').classList.remove('open');
+    document.getElementById('overlay').classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+document.getElementById('mobileMenuBtn').addEventListener('click', function(e) {
+    e.preventDefault();
+    if (document.getElementById('tocSidebar').classList.contains('open')) {
+        closeSidebar();
+    } else {
+        openSidebar();
+    }
+});
+
+document.getElementById('overlay').addEventListener('click', closeSidebar);
+
+// Swipe to close sidebar
+let touchStartX = 0;
+document.getElementById('tocSidebar').addEventListener('touchstart', function(e) {
+    touchStartX = e.touches[0].clientX;
+}, { passive: true });
+
+document.getElementById('tocSidebar').addEventListener('touchend', function(e) {
+    const touchEndX = e.changedTouches[0].clientX;
+    if (touchStartX - touchEndX > 50) {
+        closeSidebar();
+    }
+}, { passive: true });
+
+// ============================================
+// BACK TO TOP
+// ============================================
+
+const backToTop = document.getElementById('backToTop');
+const bookPage = document.getElementById('bookPage');
+
+bookPage.addEventListener('scroll', function() {
+    if (bookPage.scrollTop > 300) {
+        backToTop.classList.add('visible');
+    } else {
+        backToTop.classList.remove('visible');
+    }
+}, { passive: true });
+
+backToTop.addEventListener('click', function(e) {
+    e.preventDefault();
+    bookPage.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+// ============================================
+// KEYBOARD NAVIGATION
+// ============================================
+
+document.addEventListener('keydown', function(e) {
+    if (e.target.tagName === 'INPUT') return;
+    
+    if (e.key === 'ArrowLeft' && currentChapterIndex > 0) {
+        const prev = allChapters[currentChapterIndex - 1];
+        navigateToChapter(prev.bookKey, prev.chapterKey);
+    } else if (e.key === 'ArrowRight' && currentChapterIndex < allChapters.length - 1) {
+        const next = allChapters[currentChapterIndex + 1];
+        navigateToChapter(next.bookKey, next.chapterKey);
+    } else if (e.key === 'Escape') {
+        closeSidebar();
+    }
+});
+
+// ============================================
+// INITIALIZE
+// ============================================
+
+buildTOC();
+
+// Restore last reading position
+try {
+    const lastChapter = localStorage.getItem('lastChapter');
+    if (lastChapter) {
+        const parts = lastChapter.split(':');
+        if (parts.length === 2 && bookData[parts[0]] && bookData[parts[0]].chapters[parts[1]]) {
+            navigateToChapter(parts[0], parts[1]);
+        } else {
+            navigateToChapter('frontMatter', 'title-page');
+        }
+    } else {
+        navigateToChapter('frontMatter', 'title-page');
+    }
+} catch(e) {
+    navigateToChapter('frontMatter', 'title-page');
+}
+
+// Check for updates on load
+setTimeout(checkForUpdates, 2000);
+    </script>
+</body>
+</html>
