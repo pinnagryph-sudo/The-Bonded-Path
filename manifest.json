@@ -1,13 +1,13 @@
 {
-  "name": "Vaeloris Encyclopedia",
-  "short_name": "Vaeloris",
-  "description": "The complete guide to The Bonded Path",
-  "start_url": "./index.html",
+  "name": "The Bonded Path",
+  "short_name": "Bonded Path",
+  "description": "Complete guide to Pinnagryphs and the Six Realms of Vaeloris",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#1a1612",
-  "theme_color": "#b89d76",
-  "orientation": "any",
+  "background_color": "#1a1510",
+  "theme_color": "#2d2518",
+  "orientation": "portrait",
   "icons": [
     {
       "src": "./icon-192.png",
