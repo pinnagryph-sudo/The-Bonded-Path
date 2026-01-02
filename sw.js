@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bonded-path-v9';
+const CACHE_NAME = 'bonded-path-v10';
 const urlsToCache = [
     './',
     './index.html',

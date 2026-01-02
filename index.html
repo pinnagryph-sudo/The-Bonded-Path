@@ -71,10 +71,18 @@
         [data-theme="dark"] .search-results { background: #1e1c1a; border-color: #ffe066; }
         [data-theme="dark"] .search-result-title { color: #ffffff; }
         [data-theme="dark"] .search-result-context { color: #a09888; }
-        [data-theme="dark"] .toc-book-title { color: #ffffff; }
-        [data-theme="dark"] .toc-chapter { color: #c8c0b0; }
-        [data-theme="dark"] .toc-chapter:hover { color: #ffffff; }
-        [data-theme="dark"] .toc-chapter.active { color: #ffe066; }
+        [data-theme="dark"] .toc-book-title { 
+            color: #ffe066; 
+            border-top-color: #ffe066;
+            background: linear-gradient(to bottom, rgba(255,224,102,0.1), transparent);
+        }
+        [data-theme="dark"] .toc-chapters {
+            border-left: 1px solid rgba(255,224,102,0.2);
+            margin-left: 10px;
+        }
+        [data-theme="dark"] .toc-chapter { color: #a09888; }
+        [data-theme="dark"] .toc-chapter:hover { color: #ffffff; background: rgba(255,255,255,0.05); }
+        [data-theme="dark"] .toc-chapter.active { color: #ffe066; background: rgba(255,224,102,0.1); }
         
         [data-theme="dark"] .sidebar { background: #242220 !important; border: 1px solid #3c3834 !important; border-left: 4px solid #50e8d8 !important; }
         [data-theme="dark"] .sidebar.warning { background: #282418 !important; border-left-color: #ffa54f !important; }
@@ -186,15 +194,22 @@
         
         .toc-content { flex: 1; overflow-y: auto; padding: 10px 0; -webkit-overflow-scrolling: touch; }
         .toc-book-title {
-            padding: 15px 20px 8px; font-family: 'Cinzel', serif;
-            font-size: 0.85rem; color: var(--accent); letter-spacing: 0.03em;
-            border-top: 1px solid var(--parchment-dark); margin-top: 10px;
+            padding: 12px 20px 8px; font-family: 'Cinzel', serif;
+            font-size: 0.8rem; color: var(--accent); letter-spacing: 0.05em;
+            text-transform: uppercase; font-weight: 600;
+            border-top: 2px solid var(--accent); margin-top: 15px;
+            background: linear-gradient(to bottom, rgba(139,69,19,0.08), transparent);
         }
         .toc-book-title:first-child { border-top: none; margin-top: 0; }
+        .toc-chapters { 
+            padding: 5px 0 10px; 
+            margin-bottom: 5px;
+        }
         .toc-chapter {
-            padding: 8px 20px 8px 30px; font-size: 0.9rem;
-            color: var(--ink-light); cursor: pointer;
+            padding: 6px 20px 6px 28px; font-size: 0.85rem;
+            color: var(--ink-faded); cursor: pointer;
             transition: all 0.2s; border-left: 3px solid transparent;
+            line-height: 1.4;
         }
         .toc-chapter:hover { color: var(--ink); background: rgba(0,0,0,0.03); }
         .toc-chapter.active { color: var(--accent); border-left-color: var(--accent); background: rgba(139,69,19,0.08); font-weight: 600; }
